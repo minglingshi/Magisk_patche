@@ -7,5 +7,5 @@
         echo "$i is done"
         echo $i 完成 >>log.txt
         mv new-boot.img done/
-        mv done/new-boot.img done/$i
+        sh time.sh $i
     done
