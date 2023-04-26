@@ -17,7 +17,7 @@ export PATCHVBMETAFLAG
 CHROMEOS=false
 
 echo "解包boot"
-$Magiskboot unpack "$BOOTIMAGE" >/dev/null 2>&1
+$Magiskboot unpack "$BOOTIMAGE"
 
 case $? in
   0 ) ;;
@@ -39,7 +39,7 @@ esac
 # Test patch status and do restore
 echo "检查ramdisk"
 if [ -e ramdisk.cpio ]; then
-  $Magiskboot cpio ramdisk.cpio test >/dev/null 2>&1
+  $Magiskboot cpio ramdisk.cpio test
   STATUS=$?
 else
   # Stock A only system-as-root
@@ -48,15 +48,15 @@ fi
 case $((STATUS & 3)) in
   0 )  # Stock boot
     echo "Stock boot image detected"
-    SHA1=$($Magiskboot sha1 "$BOOTIMAGE" 2>/dev/null)
+    SHA1=$($Magiskboot sha1 "$BOOTIMAGE")
     cat $BOOTIMAGE > stock_boot.img
-    cp -af ramdisk.cpio ramdisk.cpio.orig 2>/dev/null
+    cp -af ramdisk.cpio ramdisk.cpio.orig
     ;;
   1 )  # Magisk patched
     echo "Magisk patched boot image detected"
     # Find SHA1 of stock boot image
-    [ -z $SHA1 ] && SHA1=$($Magiskboot cpio ramdisk.cpio sha1 2>/dev/null)
-    $Magiskboot cpio ramdisk.cpio restore >/dev/null 2>&1
+    [ -z $SHA1 ] && SHA1=$($Magiskboot cpio ramdisk.cpio sha1)
+    $Magiskboot cpio ramdisk.cpio restore
     cp -af ramdisk.cpio ramdisk.cpio.orig
     rm -f stock_boot.img
     ;;
@@ -100,7 +100,7 @@ $Magiskboot cpio ramdisk.cpio \
 "patch" \
 "backup ramdisk.cpio.orig" \
 "mkdir 000 .backup" \
-"add 000 .backup/.magisk config" >/dev/null 2>&1
+"add 000 .backup/.magisk config"
 
 rm -rf ramdisk.cpio.orig config magisk*.xz
 
@@ -109,31 +109,31 @@ rm -rf ramdisk.cpio.orig config magisk*.xz
 #################
 
 for dt in dtb kernel_dtb extra; do
-  [ -f $dt ] && $Magiskboot dtb $dt patch >/dev/null 2>&1 && echo "Patch fstab in $dt"
+  [ -f $dt ] && $Magiskboot dtb $dt patch && echo "Patch fstab in $dt"
 done
 
 if [ -f kernel ]; then
   # Remove Samsung RKP
   $Magiskboot hexpatch kernel \
   49010054011440B93FA00F71E9000054010840B93FA00F7189000054001840B91FA00F7188010054 \
-  A1020054011440B93FA00F7140020054010840B93FA00F71E0010054001840B91FA00F7181010054 >/dev/null 2>&1
+  A1020054011440B93FA00F7140020054010840B93FA00F71E0010054001840B91FA00F7181010054
 
   # Remove Samsung defex
   # Before: [mov w2, #-221]   (-__NR_execve)
   # After:  [mov w2, #-32768]
-  $Magiskboot hexpatch kernel 821B8012 E2FF8F12 >/dev/null 2>&1
+  $Magiskboot hexpatch kernel 821B8012 E2FF8F12
 
   # Force kernel to load rootfs
   # skip_initramfs -> want_initramfs
   $Magiskboot hexpatch kernel \
   736B69705F696E697472616D667300 \
-  77616E745F696E697472616D667300 >/dev/null 2>&1
+  77616E745F696E697472616D667300
 fi
 
 #################
 # Repack & Flash
 #################
 echo "打包boot"
-$Magiskboot repack "$BOOTIMAGE"  >/dev/null 2>&1 || echo "打包完成"
+$Magiskboot repack "$BOOTIMAGE"  || echo "打包完成"
 
 rm -rf stock_boot.img *kernel* *dtb* ramdisk.cpio*
