@@ -1,11 +1,10 @@
 #!/bin/sh
 # -*- coding: utf-8 -*-
- ls *.img | while read i; do
-        [[ "$i" = "$MODID" ]] && continue
-        echo 正在修补$i
-        sh boot_patch.sh $i
-        echo "$i is done"
-        echo $i 完成 >>log.txt
-        mv new-boot.img done/
-        sh time.sh $i
-    done
+for image in ls *.img
+do
+echo "Patching $image"
+sh boot_patch.sh $image
+echo "$image is done"
+echo "$image finished" >>log.txt
+mv new-boot.img done/
+done
